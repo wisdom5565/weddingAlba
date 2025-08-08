@@ -319,8 +319,7 @@ export const usePostingForm = (): UsePostingFormResult => {
             // 생성 모드: 게시물 추가 API 호출
             response = await postingApi.addPosting(formData);
         }
-        
-        const newOrUpdatedPostingId = response.data?.postingId;
+        const newOrUpdatedPostingId = response.data;
         
         if (response.success) {
             showToast('모집글 등록이 완료되었습니다.');
