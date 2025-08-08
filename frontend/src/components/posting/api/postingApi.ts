@@ -16,7 +16,7 @@ export const postingApi = {
     // 모집글 등록
     addPosting: async (postingData: PostingRequestDTO) => {
         try {
-            return await post<PostingResponseDTO>(`${API_BASE_URL}/posting/`, postingData);
+            return await post<number>(`${API_BASE_URL}/posting/`, postingData);
         } catch (error) {
             console.error('모집글 등록 에러:', error);
             return {
