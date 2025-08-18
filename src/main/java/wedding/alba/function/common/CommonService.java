@@ -28,6 +28,9 @@ public class CommonService {
     private CommonMapper commonMapper;
 
     @Autowired
+    private CommonRepository commonRepository;
+
+    @Autowired
     private PostingService postingService;
 
     @Autowired
@@ -39,52 +42,18 @@ public class CommonService {
     @Autowired
     private ApplyHistoryService applyHistoryService;
 
-
-
-    // 내 모집글 리스트
+    // 내 모집글 리스트 - 무한스크롤 최적화 버전
     public Page<CommonPostResponseDTO> getMyPostingPage(int page, int size, Long userId) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "registrationDatetime"));
-        List<PostingResponseDTO> postingResponseDTOList = postingService.getPostingListByUserId(userId);
-
-        List<CommonPostResponseDTO> myPostingList = new ArrayList<>();
-        // 현재 모집중인 모집글
-        for(PostingResponseDTO posting : postingResponseDTOList) {
-            List<ApplyingResponseDTO> applyingList = applyingService.getApplyingListByPostingId(posting.getPostingId());
-
-            // 신청 개수
-            int applyCount = applyingList.size();
-
-            // 확정된 신청 개수 (status == 1)
-            int confirmationCount = (int) applyingList.stream()
-                    .filter(applying -> applying.getStatus() == 1)
-                    .count();
-
-            CommonPostResponseDTO postingReponseDTO = commonMapper.toCommonPostingResponseDTO(posting, applyCount, confirmationCount);
-            myPostingList.add(postingReponseDTO);
+        try {
+            // 페이지네이션 설정
+            Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "registrationDatetime"));
+            
+            // CommonRepository를 통해 최적화된 단일 쿼리로 데이터 조회
+            return commonRepository.findMyPostingWithPagination(userId, pageable);
+        } catch (Exception e) {
+            log.error("내 모집글 조회 중 오류 발생: {}", e.getMessage(), e);
+            throw new RuntimeException("내 모집글 조회에 실패했습니다.", e);
         }
-
-        // 모집완료 혹은 취소
-        List<PostHistoryDTO> postHistoryDTOList = postHistoryService.getPostHistoryListByUserId(userId);
-        for(PostHistoryDTO postHistoryDTO : postHistoryDTOList) {
-            List<ApplyHistoryDTO> applyHistoryDTOList = applyHistoryService.getApplyHistoryListByPostId(postHistoryDTO.getPostHistoryId());
-            // 신청 개수
-            int applyCount = applyHistoryDTOList.size();
-
-            // 확정된 신청 개수 (status == 1)
-            int confirmationCount = (int) applyHistoryDTOList.stream()
-                    .filter(applyHistoryDTO -> applyHistoryDTO.getStatus() == 1)
-                    .count();
-
-            CommonPostResponseDTO postingReponseDTO = commonMapper.toCommonPostResponseDTO(postHistoryDTO, applyCount, confirmationCount);
-            myPostingList.add(postingReponseDTO);
-        }
-
-        int start = page * size;
-        int end = Math.min(start + size, myPostingList.size());
-        List<CommonPostResponseDTO> pageContent = myPostingList.subList(start, end);
-
-        // 4. PageImpl로 변환
-        return new PageImpl<>(pageContent, pageable, myPostingList.size());
     }
 
     public List<CommonApplyResponseDTO> getApplyListByPostId(Long id, String dataType) {

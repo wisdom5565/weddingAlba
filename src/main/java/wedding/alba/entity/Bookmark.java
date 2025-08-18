@@ -25,8 +25,11 @@ public class Bookmark {
     @Column(name = "bookmark_id")
     private Long bookmarkId;
 
-    @Column(name = "posting_id", nullable = false)
+    @Column(name = "posting_id")
     private Long postingId;
+
+    @Column(name = "post_history_id")
+    private Long postHistoryId;
 
     @Column(name = "user_id", nullable = false)
     private Long userId;

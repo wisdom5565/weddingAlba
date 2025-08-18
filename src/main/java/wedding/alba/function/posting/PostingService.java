@@ -17,6 +17,7 @@ import wedding.alba.function.applyHistory.dto.ApplyHistoryDTO;
 import wedding.alba.function.applyHistory.mapper.ApplyHistoryMapper;
 import wedding.alba.function.applying.ApplyingService;
 import wedding.alba.function.applying.dto.ApplyingResponseDTO;
+import wedding.alba.function.bookMark.BookmarkService;
 import wedding.alba.function.postHistory.mapper.PostHistoryMapper;
 import wedding.alba.function.postHistory.dto.PostHistoryDTO;
 import wedding.alba.function.postHistory.PostHistoryService;
@@ -43,6 +44,9 @@ public class PostingService {
 
     @Autowired
     private ApplyHistoryService applyHistoryService;
+
+    @Autowired
+    private BookmarkService bookmarkService;
 
     @Autowired
     private PostingMapper postingMapper;
@@ -152,6 +156,7 @@ public class PostingService {
                 applyingService.deleteApplyingById(applying.getApplyingId());
             }
         }
+
         postingRepository.deleteById(postingId);
     }
 

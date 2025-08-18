@@ -337,6 +337,7 @@ public class BookmarkService {
     private BookmarkResponseDto convertToBookmarkResponseDto(Bookmark bookmark) {
         // 게시글 정보 DTO 생성
         BookmarkResponseDto.PostingDto postingDto = null;
+
         
         if (bookmark.getPosting() != null) {
             // 게시글이 존재하는 경우

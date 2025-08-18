@@ -6,9 +6,16 @@ import wedding.alba.enums.EnumType;
 import wedding.alba.function.applyHistory.dto.ApplyHistoryDTO;
 import wedding.alba.function.applying.dto.ApplyingResponseDTO;
 import wedding.alba.function.common.dto.CommonApplyResponseDTO;
+import wedding.alba.function.common.dto.CommonPostQueryResult;
 import wedding.alba.function.common.dto.CommonPostResponseDTO;
 import wedding.alba.function.postHistory.dto.PostHistoryDTO;
 import wedding.alba.function.posting.dto.PostingResponseDTO;
+
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 @Mapper(componentModel = "spring")
 public interface CommonMapper {
@@ -50,5 +57,32 @@ public interface CommonMapper {
         else if (status == -1) return "거절";
         else return "확정";
     }
+    
+    default List<String> parseTags(String tags) {
+        if (tags == null || tags.isEmpty()) {
+            return new ArrayList<>();
+        }
+        return Arrays.asList(tags.split(","));
+    }
 
+//    default LocalTime parseTimeString(String timeString) {
+//        if (timeString == null || timeString.isEmpty()) {
+//            return null;
+//        }
+//        try {
+//            return LocalTime.parse(timeString, DateTimeFormatter.ofPattern("HH:mm:ss"));
+//        } catch (Exception e) {
+//            return null;
+//        }
+//    }
+    
+    // 네이티브 쿼리 결과를 DTO로 매핑하는 메소드
+    @Mapping(target = "postingId", source = "id")
+    @Mapping(target = "payType", expression = "java(queryResult.getPayType() != null ? EnumType.PayType.valueOf(queryResult.getPayType()) : null)")
+    @Mapping(target = "payTypeText", expression = "java(queryResult.getPayType() != null ? parsePayTypeText(EnumType.PayType.valueOf(queryResult.getPayType())) : null)")
+    @Mapping(target = "dataType", expression = "java(queryResult.getDataType() != null ? EnumType.PostingStatusType.valueOf(queryResult.getDataType()) : null)")
+    @Mapping(target = "postHistoryId", expression = "java(\"HISTORY\".equals(queryResult.getDataType()) ? queryResult.getId() : null)")
+    @Mapping(target = "tags", expression = "java(parseTags(queryResult.getTags()))")
+    @Mapping(target = "status", expression = "java(queryResult.getStatus() == null ? 0 : queryResult.getStatus())")
+    CommonPostResponseDTO toCommonPostResponseDTO(CommonPostQueryResult queryResult);
 }
